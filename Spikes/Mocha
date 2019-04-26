@@ -1,0 +1,4 @@
+Mocha
+https://mochajs.org/#getting-started
+
+Mocha is a testing framework for JavaScript that will help use unit and system test our games. It can be running on a browser or Node.js for simple easy testing. On the following website there is examples on how to get started and shows where to set up and store the files. Mocha is also on GitHub and is being supported and update constantly. We will be able to use this Framework to test function in our games and the overall game to see if there is any errors or faults that we couldn’t caught with our eyes.
