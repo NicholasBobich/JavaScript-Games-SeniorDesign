@@ -1,0 +1,5 @@
+To run in Chrome download python and run a command prompt in the PixiJS folder.
+Enter the command "python -m http.server".
+The web page can then be found at http://localhost:8000/.
+
+It just works in Firefox.
