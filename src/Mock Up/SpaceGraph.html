@@ -142,6 +142,10 @@
 
 	        // show number of correct answers out of total
 	        resultsContainer.innerHTML = numCorrect + ' out of ' + questions.length;
+
+	        if (numCorrect < 3) {
+	        	resultsContainer.innerHTML = 'When looking at corrdanates (x, y) the first value is going to determine the X axis and the Second is going to determine the Y axis';
+	        }
 	    }
 
 	    // show questions right away

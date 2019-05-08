@@ -140,6 +140,10 @@
 
 	        // show number of correct answers out of total
 	        resultsContainer.innerHTML = numCorrect + ' out of ' + questions.length;
+
+	        if (numCorrect < 3) {
+	        	resultsContainer.innerHTML = 'Multiplcation can help you out with these problems. For example 1/4 = ?/8 If you can see 4 x 2 = 8 so if you multiple 1 by 2 you will get the answer';
+	        }
 	    }
 
 	    // show questions right away

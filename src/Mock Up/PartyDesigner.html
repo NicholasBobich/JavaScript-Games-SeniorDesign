@@ -142,6 +142,10 @@
 
 	        // show number of correct answers out of total
 	        resultsContainer.innerHTML = numCorrect + ' out of ' + questions.length;
+
+	        if (numCorrect < 3) {
+	        	resultsContainer.innerHTML = 'Area: Length times Width -- Perimeter: all sides added up';
+	        }
 	    }
 
 	    // show questions right away
