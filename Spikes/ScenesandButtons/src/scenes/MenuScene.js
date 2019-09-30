@@ -7,34 +7,35 @@ export class MenuScene extends Phaser.Scene{
     }
 
     //grab data transfered from another scene
-    init(data){
-        console.log(data);
-        console.log("I GOT IT");
+    init(){
+
     }
 
     create(){
 
         //setOrigin moves the origin of the image to the topleft
-        this.add.image(this.game.renderer.width / 2, this.game.renderer.height * 0.20, "logo").setDepth(1);
-        this.add.image(0,0, "title_bg").setOrigin(0,0).setDepth(0);
-        let playButton = this.add.image(this.game.renderer.width / 2, this.game.renderer.height / 2, "play_button").setDepth(1);
+        this.add.image(this.game.renderer.width / 2, this.game.renderer.height * 0.20, CST.IMAGE.LOGO).setDepth(1);
+        this.add.image(0,0, CST.IMAGE.TITLE).setOrigin(0,0).setDepth(0);
+        let playButton = this.add.image(this.game.renderer.width / 2, this.game.renderer.height / 2, CST.IMAGE.PLAY).setDepth(1);
 
-        this.add.image(this.game.renderer.width / 2, this.game.renderer.height / 2 + 100, "options_button").setDepth(1);
+        let optionsButton = this.add.image(this.game.renderer.width / 2, this.game.renderer.height / 2 + 100, CST.IMAGE.OPTIONS).setDepth(1);
 
-        let hoverSprite = this.add.sprite(100,100,"cat");
+        //this.add.image(this.game.renderer.width / 2, this.game.renderer.height / 2 + 100, CST.IMAGE.OPTIONS).setDepth(1);
+
+        let hoverSprite = this.add.sprite(100,100,CST.SPRITE.CAT);
         hoverSprite.setScale(2);
         hoverSprite.setVisible(false);
 
         this.sound.pauseOnBlur = false;
-        this.sound.play("title_music",{
+        this.sound.play(CST.AUDIO.TITLE,{
             loop: true
         });
 
         this.anims.create({
             key: "walk",
             frameRate: 4,
-            repeat: -1,
-            frames: this.anims.generateFrameNumbers("cat",{
+            repeat: -1, //repeats forever
+            frames: this.anims.generateFrameNumbers(CST.SPRITE.CAT,{
                 frames: [0,1,2,3]
             })
         });
@@ -57,6 +58,26 @@ export class MenuScene extends Phaser.Scene{
         //click the button
         playButton.on("pointerup", ()=>{
             console.log("open the gates");
+        })
+
+        //make the image interactible
+        optionsButton.setInteractive();
+        //enter the image
+        optionsButton.on("pointerover", ()=>{
+            hoverSprite.setVisible(true);
+            hoverSprite.play("walk");
+            hoverSprite.x = optionsButton.x - optionsButton.width;
+            hoverSprite.y = optionsButton.y;
+        })
+
+        //leave the image
+        optionsButton.on("pointerout", ()=>{
+            hoverSprite.setVisible(false);
+        })
+
+        //click the button
+        optionsButton.on("pointerup", ()=>{
+            console.log("open the options");
         })
 
     }
