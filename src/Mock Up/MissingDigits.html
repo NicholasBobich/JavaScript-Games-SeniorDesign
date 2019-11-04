@@ -141,6 +141,10 @@
 
 	        // show number of correct answers out of total
 	        resultsContainer.innerHTML = numCorrect + ' out of ' + questions.length;
+
+	        if (numCorrect < 3) {
+	        	resultsContainer.innerHTML = 'Using Divition and Multipliation can help you to solve these different problems. For example 2 x ? = 4 If you divide 4 by 2 you will get the answer';
+	        }
 	    }
 
 	    // show questions right away

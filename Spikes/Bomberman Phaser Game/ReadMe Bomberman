@@ -1,0 +1,7 @@
+Bomberman Example
+
+This codes helps up to understand the concepts of a graghic game that allows the movement of a player, enimies and randomly generated bombs.
+
+This code uses Phaser to create the game and uses many different functions provided by Phaser
+
+In the game there is many different code examples of movement, generation of objects and generation of the map. All of this code will be of use to us when it comes to creating the game

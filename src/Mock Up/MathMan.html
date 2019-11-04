@@ -141,6 +141,10 @@
 
 	        // show number of correct answers out of total
 	        resultsContainer.innerHTML = numCorrect + ' out of ' + questions.length;
+
+	        if (numCorrect < 3) {
+	        	resultsContainer.innerHTML = 'Remembering your orders of operations PEMDAS = Parentheses, Exponents, Multiplication, Division, Addition, Subtraction';
+	        }
 	    }
 
 	    // show questions right away
