@@ -68,7 +68,7 @@ class bootGame extends Phaser.Scene {
 		this.load.image("highScore", "assets/sprites/highScore.png");
 
 		this.load.image("pan", "assets/sprites/pan.png");
-		this.load.image("underline", "assets/sprites/underline.png");
+		this.load.image("fractionBackground", "assets/sprites/fractionBackGround.png");
 		this.load.spritesheet("slices", "assets/sprites/modernSlices.png", {
 			frameWidth: gameOptions.sliceSize,
 			frameHeight: gameOptions.sliceSize
@@ -151,7 +151,7 @@ class mainMenu extends Phaser.Scene {
 		
 		expertButton.on("pointerdown", function() {
 			var highScore = localStorage.getItem(gameOptions.localStorageName);
-			if (highScore > 20000) {
+			if (highScore >= 7500) {
 				this.scene.start("PlayExpert");
 			} else {
 				window.alert("You must have a better high score to play expert mode!");
@@ -190,11 +190,12 @@ class playGame extends Phaser.Scene {
 		var logo = this.add.image(400, 140, "logo");
 		this.panArray = [];
 		this.score = 0;
+		this.playAgain = 0;
 		var zone1, zone2, zone3, zone4, zone5, zone6;
 		var zoneNum = 1;
-		var fractionXY = [this.getObjectPosition(-0.05, -0.52), this.getObjectPosition(-0.05, 2.53), this.getObjectPosition(0.95, -0.52), 		//Left side fractions -0.52
-											this.getObjectPosition(1.63, 1.00),																																									//Center fraction
-											this.getObjectPosition(0.95, 2.53), this.getObjectPosition(1.95, -0.52), this.getObjectPosition(1.95, 2.53)];				//Right side fractions 2.53
+		var fractionXY = [this.getObjectPosition(0.17, -0.42), this.getObjectPosition(0.17, 2.43), this.getObjectPosition(1.17, -0.42), 			//Left side fractions -0.42
+											this.getObjectPosition(1.53, 1.00),																																									//Center fraction
+											this.getObjectPosition(1.17, 2.43), this.getObjectPosition(2.17, -0.42), this.getObjectPosition(2.17, 2.43)];				//Right side fractions 2.43
 		var fracNum = 0;
 		var slice, fraction;
 
@@ -251,6 +252,13 @@ class playGame extends Phaser.Scene {
 			for (var j = 0; j < gameOptions.layout.cols; j++) {
 				var objectPosition = this.getObjectPosition(i, j);
 				if (j == 0 || j == 2) {
+					
+					if (j == 0) {
+						this.add.image(objectPosition.x - 100, objectPosition.y + 35, "fractionBackground");
+					} else {
+						this.add.image(objectPosition.x + 100, objectPosition.y + 35, "fractionBackground");
+					}
+
 					this.add.image(objectPosition.x, objectPosition.y, "pan");
 					slice = this.add.sprite(objectPosition.x, objectPosition.y, "slices", 0);
 					slice.visible = false;
@@ -265,12 +273,6 @@ class playGame extends Phaser.Scene {
 						fractionSprite: fraction,
 						add: false
 					};
-					
-					if (j == 0) {
-						this.add.image(objectPosition.x - 125, objectPosition.y, "underline");
-					} else {
-						this.add.image(objectPosition.x + 125, objectPosition.y, "underline");
-					}
 					
 					switch (zoneNum) {
 						case (1):
@@ -301,8 +303,8 @@ class playGame extends Phaser.Scene {
 					zoneNum++;
 
 				} else if (i == 1 && j == 1) {
+					this.add.image(objectPosition.x, objectPosition.y + 100, "fractionBackground");					//Was 135
 					this.add.image(objectPosition.x, objectPosition.y, "pan");
-					this.add.image(objectPosition.x, objectPosition.y + 135, "underline");
 					var randomSlice = Math.floor((Math.random() * 7) + 1);
 					slice = this.physics.add.sprite(objectPosition.x, objectPosition.y, "slices", randomSlice).setInteractive();
 					fraction = this.add.sprite(fractionXY[fracNum].x, fractionXY[fracNum].y, "fractions", randomSlice);
@@ -478,7 +480,7 @@ class playGame extends Phaser.Scene {
 		});
 		
 		if (this.score >= 7500)  {
-			this.scene.start("PlayExpert", {score: this.score});
+			this.scene.start("PlayExpert", {score: this.score, playAgain: this.playAgain});
 			window.alert("You are in now in Expert Mode!");
 		}
 	}
@@ -511,14 +513,19 @@ class playExpert extends Phaser.Scene {
 		super("PlayExpert");
 	}
 
-	//Receives score from Play Game scene
+	//Receives score and flag from Play Game scene. The purpose of the flag is to determine whether the reset/play again button should go straight to expert or normal
 	init(data) {
 		this.currentScore = data.score;
+		this.playExpertAgain = data.playAgain;
 	}
 
 	create() {
 		if (this.currentScore == null) {
 			this.currentScore = 0;
+		}
+
+		if (this.playExpertAgain == null) {
+			this.playExpertAgain = 1;
 		}
 		var woodBackground = this.add.image(400, 320, "woodBackground");
 		var logo = this.add.image(400, 132, "logo");
@@ -556,7 +563,11 @@ class playExpert extends Phaser.Scene {
 				yoyo: true,
 				callbackScope: this,
 				onComplete: function() {
-					this.scene.start("PlayGame");
+					if (this.playExpertAgain == 1) {
+						this.scene.start("PlayExpert");
+					} else {
+						this.scene.start("PlayGame");
+					}
 				}
 			});
 		}, this);
@@ -779,7 +790,7 @@ class playExpert extends Phaser.Scene {
 			delay: 500,
 			callback: ()=> {
 				if (this.isGameOver()) {
-					this.scene.start("GameOver", {score: this.currentScore});
+					this.scene.start("GameOver", {score: this.currentScore, playAgain: this.playExpertAgain});
 				}
 			}
 		});
@@ -817,6 +828,7 @@ class gameOver extends Phaser.Scene {
 	//Receives score from Play Game or Play Expert scene
 	init(data) {
 		this.finalScore = data.score;
+		this.playAgain = data.playAgain;
 	}
 
 	create() {
@@ -859,7 +871,11 @@ class gameOver extends Phaser.Scene {
 		}, this);
 
 		playAgainButton.on("pointerdown", function() {
-			this.scene.start("PlayGame");
+			if (this.playAgain == 1) {
+						this.scene.start("PlayExpert");
+					} else {
+						this.scene.start("PlayGame");
+					}
 		}, this);
 
 		quizButton.on("pointerdown", function() {
