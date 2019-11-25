@@ -152,7 +152,7 @@ class mainMenu extends Phaser.Scene {
 		expertButton.on("pointerdown", function() {
 			var highScore = localStorage.getItem(gameOptions.localStorageName);
 			if (highScore >= 7500) {
-				this.scene.start("PlayExpert");
+				this.scene.start("PlayExpert", {playAgain: null});
 			} else {
 				window.alert("You must have a better high score to play expert mode!");
 			}
@@ -178,7 +178,7 @@ class mainMenu extends Phaser.Scene {
 /*
 Nick Bobich/Megan Solomon/Andrejs Tomsons
 Notes: Play Game scene contains all game functionality.
-Last Updated: 11-14-19 by Nick/Megan
+Last Updated: 11-12-19 by Nick
 */
 class playGame extends Phaser.Scene {
 	constructor() {
@@ -403,7 +403,7 @@ class playGame extends Phaser.Scene {
 	/*
 	Megan Solomon
 	Notes: This function updates the game after a slice is added to a pan.
-	Last Updated: 11-17-19 by Nick
+	Last Updated: 11-22-19 by Nick
 	*/
 	refreshGame(canAdd) {
 		var slice;
@@ -506,7 +506,7 @@ class playGame extends Phaser.Scene {
 /*
 Nick Bobich
 Notes: Scene displays the expert mode of the game.
-Last Updated: 11-18-19
+Last Updated: 11-22-19 by Nick
 */
 class playExpert extends Phaser.Scene {
 	constructor() {
@@ -818,7 +818,7 @@ class playExpert extends Phaser.Scene {
 /*
 Andrejs Tomsons
 Notes: Scene displays your score at the end of the game and provides a link to play again or to the quiz.
-Last Updated: 11-14-19 by Andrejs
+Last Updated: 11-22-19 by Andrejs
 */
 class gameOver extends Phaser.Scene {
 	constructor() {
