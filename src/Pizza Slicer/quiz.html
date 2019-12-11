@@ -2,12 +2,22 @@
 <html>
 <head>
 	<title>Quiz</title>
-	<meta name = "viewport" content ="width = device-width, initial-scale = 1.0, user-scalable = 0, minimal-ui" />
 	<link rel="stylesheet" type="text/css" href="bootstrap.css">
 	
 </head>
 <body>
 	<style type="text/css">
+		body {
+			background-image: url("assets/sprites/woodBackGround.png");
+			height: 710px;
+			width: 800px;
+			display: block;
+			margin: 0;
+			position: absolute;
+			top: 50%;
+			left: 50%;
+			transform: translate(-50%, -50%);
+		}
 		.modal {
 		  display: none; /* Hidden by default */
 		  position: fixed; /* Stay in place */
@@ -24,40 +34,112 @@
 		/* Modal Content */
 		.modal-content {
 		  background-color: #fefefe;
-		  margin: auto;
-		  padding: 20px;
 		  border: 1px solid #888;
-		  width: 50%;
+		  width: 95%;
+		  height: 85%;
+		}
+		.container {
+		  display: inline-block;
+		  position: relative;
+		  cursor: pointer;
+		  font-size: 20px;
+		  -webkit-user-select: none;
+		  -moz-user-select: none;
+		  -ms-user-select: none;
+		  user-select: none;
 		}
 
+		/* Hide the browser's default radio button */
+		.container input {
+		  opacity: 0;
+		  cursor: pointer;
+		}
+
+		/* Create a custom radio button */
+		.checkmark {
+		  position: absolute;
+		  top: 5px;
+		  left: 0px;
+		  height: 20px;
+		  width: 20px;
+		  background-color: #eee;
+		  border-radius: 50%;
+		}
+
+		/* On mouse-over, add a grey background color */
+		.container:hover input ~ .checkmark {
+		  background-color: #ccc;
+		}
+
+		/* When the radio button is checked, add a blue background */
+		.container input:checked ~ .checkmark {
+		  background-color: #e9cd19;
+		}
+
+		/* Create the indicator (the dot/circle - hidden when not checked) */
+		.checkmark:after {
+		  content: "";
+		  position: absolute;
+		  display: none;
+		}
+
+		/* Show the indicator (dot/circle) when checked */
+		.container input:checked ~ .checkmark:after {
+		  display: block;
+		}
+
+		/* Style the indicator (dot/circle) */
+		.container .checkmark:after {
+		 	top: 7px;
+			left: 7px;
+			width: 6px;
+			height: 6px;
+			border-radius: 50%;
+			background: white;
+		}
+		ul {
+			list-style: none;
+			text-align: center;
+			padding: 0px;
+		}
+		li {
+			text-align: left;
+			list-style: none;
+			padding-left: 80px;
+		}
+		.card {
+			opacity: .8;
+		}
 	</style>
 
 
 <center>
-	<div class="card text-primary bg-secondary mb-3" style="max-width: 40rem;">
-		<div>
-			<h1>Quiz</h1>
+	<div>
+		<div class="card bg-danger mb-3" style="max-width: 10rem;">
+			<strong><h1 class="display-5 text-primary" style="font: Segoe UI;">Quiz</h1></strong>
 		</div>
 		<div>
-			<strong><div id="quiz" style="text-align: center; font-size: 24px;"></div></strong>
+			<strong><div id="quiz" style="text-align: center; font-size: 20px; font: Segoe UI;max-width: 20rem;"></div></strong>
 
-			<button id="submit" class="btn btn-outline-primary" style="text-align: center; font-size: 24px;">Get Results</button><br><br>
-			<div id="hint" style="text-align: center;"></div>
-			<strong><div id="results" style=" font-size: 24px"></div></strong>
+			<button id="submit" class="btn btn-danger" style="font-size: 20px; height: 50px; width: 175px; text-align: center;">Get Results</button>
+			<div id="hint"></div>
+			<strong>
+					<div id="results" class="text-white" style=" font-size: 20px"></div>
+				</strong><br>
+
 			<!-- Model -->
 			<div id="myModal" class="modal">
 
 			  <!-- Modal content -->
 			  <div class="modal-content">
-			    <ceter><p><img src="assets/sprites/helpHint.png"></p>
+			    <ceter><p><img src="assets/sprites/hint00.png"></p>
 			    <a class="btn btn-outline-primary" style="text-align: center; font-size: 24px; width: 200px;" href="quiz.html">Try Again?</a>
 			  </ceter></div>
 
 			</div>
 			<!-- end of Model -->
 
-			<!-- <a class="btn btn-outline-primary" style="text-align: center; font-size: 24px;" href="quiz.html">Try Again?</a><br><br> -->
-			<a class="btn btn-outline-primary" style="text-align: center; font-size: 24px;" href="index.html">Return Home</a>
+			<a class="btn btn-danger" style="font-size: 20px; height: 50px; width: 175px; text-align: center;" href="index.html">Return Home</a>
 		</div>
 	</div>
 </center>
@@ -67,18 +149,18 @@
 	    {
 	        question: "1/2 + 3/6 = ?",
 	        answers: {
-	            a: '3/6',
-	            b: '1',
-	            c: '7/6'
+	            a: ' 3/6',
+	            b: '   1',
+	            c: ' 7/6'
 	        },
 	        correctAnswer: 'b'
 	    },
 	     {
 	        question: "1/3 + 7/12 = ?",
 	        answers: {
-	            a: '11/12',
-	            b: '3/4',
-	            c: '2/3'
+	            a: ' 11/12',
+	            b: '   3/4',
+	            c: '   2/3'
 	        },
 	        correctAnswer: 'a'
 	    },
@@ -86,8 +168,8 @@
 	        question: "5/12 + 1/3 = ?",
 	        answers: {
 	            a: '7/12',
-	            b: '1/2',
-	            c: '3/4'
+	            b: '1/2 ',
+	            c: '3/4 '
 	        },
 	        correctAnswer: 'c'
 	    }
@@ -98,8 +180,8 @@
 	        question: "1/2 + 1/2 = ?",
 	        answers: {
 	            a: '11/12',
-	            b: '1',
-	            c: '2/3'
+	            b: '1    ',
+	            c: '2/3  '
 	        },
 	        correctAnswer: 'b'
 	    },
@@ -107,8 +189,8 @@
 	        question: "1/3 + 1/3 = ?",
 	        answers: {
 	            a: '11/12',
-	            b: '3/4',
-	            c: '2/3'
+	            b: '3/4  ',
+	            c: '2/3  '
 	        },
 	        correctAnswer: 'c'
 	    },
@@ -116,8 +198,8 @@
 	        question: "1/2 + 1/4 = ?",
 	        answers: {
 	            a: '11/12',
-	            b: '3/4',
-	            c: '2/3'
+	            b: '3/4  ',
+	            c: '2/3  '
 	        },
 	        correctAnswer: 'b'
 	    }
@@ -128,8 +210,8 @@
 	        question: "1/6 + 1/2 = ?",
 	        answers: {
 	            a: '11/12',
-	            b: '2/3',
-	            c: '3/6'
+	            b: '2/3  ',
+	            c: '3/6  '
 	        },
 	        correctAnswer: 'b'
 	    },
@@ -137,8 +219,8 @@
 	        question: "1/3 + 1/12 = ?",
 	        answers: {
 	            a: '11/12',
-	            b: '3/4',
-	            c: '5/12'
+	            b: '3/4  ',
+	            c: '5/12 '
 	        },
 	        correctAnswer: 'c'
 	    },
@@ -146,8 +228,8 @@
 	        question: "1/2 + 1/12 = ?",
 	        answers: {
 	            a: '7/12',
-	            b: '3/4',
-	            c: '2/3'
+	            b: '3/4 ',
+	            c: '2/3 '
 	        },
 	        correctAnswer: 'a'
 	    }
@@ -187,18 +269,18 @@
 
 	                // ...add an html radio button
 	                answers.push(
-	                    '<label>'
-	                        + '<input type="radio" name="question'+i+'" value="'+letter+'">'
+	                    '<li><label class="container">'
+	                        + '<input type="radio" name="question'+i+'" value="'+letter+'"><span class="checkmark"></span>'
 	                        + letter + ': '
 	                        + questions[i].answers[letter]
-	                    + '</label><br>'
+	                    + '</label></li>'
 	                );
 	            }
 
 	            // add this question and its answers to the output
 	            output.push(
-	                '<div class="question">' + questions[i].question + '</div>'
-	                + '<div class="answers">' + answers.join('') + '</div>'
+	                '<ul><div class="card text-white bg-danger mb-3"><div class="question">' + questions[i].question + '</div>'
+	                + '<div class="answers">' + answers.join('') + '</div></ul></div>'
 	            );
 	        }
 
@@ -241,19 +323,6 @@
 
 	        // show number of correct answers out of total
 	        resultsContainer.innerHTML = numCorrect + ' out of ' + questions.length;
-
-	        //added 11/2/2019 by Megan Solomon adds a alert when they have answers wrong
-	   //      if (numWrong >= 1) {
-	        	
-	   //      		model.display = "block";
-
-	   // //      	window.open("hello")
-	   // //      	hintContainer.innerHTML = '<div class="alert alert-danger">' +
-  		// // 		'<button type="button" class="close" data-dismiss="alert"></button>' +
-  		// // 		'<p style="text-align: center;"><img src="assets/helpHint.png"></p>' +
-				// // '<a class="btn btn-outline-primary" style="text-decoration: none; font-size: 24px;"' + 
-				// // 'href="quiz.html">Try Again?</a><br><br>'
-				// // '</div>';
 
 				return numWrong;
 	        }

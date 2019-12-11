@@ -3,7 +3,7 @@ The entire body of code for the game resides in this file. The code is structure
 -----------------------------------------------------------------------------------------------------------
 1. Game options and configurations
 2. Boot Game Scene: Nothing is displayed to the player in this scene. All graphics, sounds, and fonts are pre-loaded before the game begins.
-3. Main Menu Scene: First screen that the player sees. Contains options such as play standard mode, play difficult mode, or learn how to play.
+3. Main Menu Scene: First screen that the player sees. Contains options such as play standard mode, play expert mode, or learn how to play.
 4. Play Game Scene: This is the standard version of the game with the pizza visuals to aid in learning to add fractions.
 5. Play Expert Scene: This is the difficult mode where pizza visuals are taken away and only fractions are displayed to the player.
 6. Game Over Scene: Final score is displayed. From this scene, the player can decide to play again or procede to the quiz.
@@ -12,6 +12,9 @@ var game;
 var gameOptions = {
 	pans: 6,
 	maxPanValue: 12,
+	maxStrikes: 5,
+	scoreForExpert: 1500,
+	totalHints: 20,
 	panSize: 150,
 	verticalPanSpace: 47.5,
 	horizontalPanSpace: 87.5,
@@ -20,6 +23,7 @@ var gameOptions = {
 		cols: 3
 	},
 	sliceSize: 140,
+	fractionSize: 60,
 	panFractionSize: 120,
 	tweenSpeed: 100,
 	buttonTweenSpeed: 50,
@@ -27,10 +31,12 @@ var gameOptions = {
 }
 window.onload = function() {
 	var gameConfig = {
-		width: (gameOptions.panSize * (gameOptions.pans / 2)) + (gameOptions.horizontalPanSpace * ((gameOptions.pans / 2) + 1)),		//800
-		height: (gameOptions.panSize * (gameOptions.pans / 2)) + (gameOptions.verticalPanSpace * ((gameOptions.pans / 2) + 1)),			//640
+		scale: {
+			mode: Phaser.Scale.FIT,
+			width: (gameOptions.panSize * (gameOptions.pans / 2)) + (gameOptions.horizontalPanSpace * ((gameOptions.pans / 2) + 1)),		//800
+			height: (gameOptions.panSize * (gameOptions.pans / 2)) + (gameOptions.verticalPanSpace * ((gameOptions.pans / 2) + 1)),			//640
+		},
 		backgroundColor: 0x454342,
-		debug: true,
 		physics: {
 			default: "arcade",
 			arcade: {
@@ -48,7 +54,7 @@ window.onload = function() {
 /*
 Nick Bobich
 Notes: Boot Game scene handles the preloading of all sprites as the game begins to start up. 
-Last Updated: 11-18-19 by Nick
+Last Updated: 12-10-19 by Nick
 */
 class bootGame extends Phaser.Scene {
 	constructor() {
@@ -66,6 +72,10 @@ class bootGame extends Phaser.Scene {
 		this.load.image("restartButton", "assets/sprites/restart.png");
 		this.load.image("score", "assets/sprites/score.png");
 		this.load.image("highScore", "assets/sprites/highScore.png");
+		this.load.spritesheet("strikePanel", "assets/sprites/strikes.png", {
+			frameWidth: 225,
+			frameHeight: 50
+		});
 
 		this.load.image("pan", "assets/sprites/pan.png");
 		this.load.image("fractionBackground", "assets/sprites/fractionBackGround.png");
@@ -74,8 +84,8 @@ class bootGame extends Phaser.Scene {
 			frameHeight: gameOptions.sliceSize
 		});
 		this.load.spritesheet("fractions", "assets/sprites/fractionSprite.png", {
-			frameWidth: 60,
-			frameHeight: 60
+			frameWidth: gameOptions.fractionSize,
+			frameHeight: gameOptions.fractionSize
 		});
 		this.load.bitmapFont("font", "assets/fonts/font.png", "assets/fonts/font.fnt");
 		this.load.audio("grow", ["assets/sounds/grow.ogg", "assets/sounds/grow.mp3"]);
@@ -101,7 +111,7 @@ class bootGame extends Phaser.Scene {
 Megan Solomon
 Notes: Main Menu scene contains the menu with a play game button to start the game, a quiz button, which is a 
 link to an HTML page with a quiz, and a How to Play button which opens an instruction scene.
-Last Updated: 11-14-19 by Nick
+Last Updated: 12-10-19 by Nick
 */
 class mainMenu extends Phaser.Scene {
 	constructor() {
@@ -151,10 +161,17 @@ class mainMenu extends Phaser.Scene {
 		
 		expertButton.on("pointerdown", function() {
 			var highScore = localStorage.getItem(gameOptions.localStorageName);
-			if (highScore >= 7500) {
+			if (highScore >= gameOptions.scoreForExpert) {
 				this.scene.start("PlayExpert", {playAgain: null});
 			} else {
-				window.alert("You must have a better high score to play expert mode!");
+				Swal.fire({
+				  icon: 'error',
+				  title: 'Not yet...',
+				  text: 'You need a better high score to play expert mode!',
+				  showConfirmButton: false,
+					backdrop: false,
+					showCloseButton: true
+				});
 			}
 		}, this);
 		
@@ -178,7 +195,7 @@ class mainMenu extends Phaser.Scene {
 /*
 Nick Bobich/Megan Solomon/Andrejs Tomsons
 Notes: Play Game scene contains all game functionality.
-Last Updated: 11-12-19 by Nick
+Last Updated: 12-10-19 by Nick
 */
 class playGame extends Phaser.Scene {
 	constructor() {
@@ -188,8 +205,21 @@ class playGame extends Phaser.Scene {
 	create() {
 		var woodBackground = this.add.image(400, 320, "woodBackground");
 		var logo = this.add.image(400, 140, "logo");
+
+		this.hintsArray = [{imageName: 'hint00.png', firstOperand: 2, secondOperand: 11}, {imageName: 'hint01.png', firstOperand: 3, secondOperand: 11}, 
+												{imageName: 'hint02.png', firstOperand: 4, secondOperand: 11}, {imageName: 'hint03.png', firstOperand: 5, secondOperand: 11},
+												{imageName: 'hint04.png', firstOperand: 6, secondOperand: 11}, {imageName: 'hint05.png', firstOperand: 7, secondOperand: 11},
+												{imageName: 'hint06.png', firstOperand: 3, secondOperand: 10}, {imageName: 'hint07.png', firstOperand: 4, secondOperand: 10},
+												{imageName: 'hint08.png', firstOperand: 5, secondOperand: 10}, {imageName: 'hint09.png', firstOperand: 6, secondOperand: 10},
+												{imageName: 'hint10.png', firstOperand: 7, secondOperand: 10}, {imageName: 'hint11.png', firstOperand: 4, secondOperand: 9},
+												{imageName: 'hint12.png', firstOperand: 5, secondOperand: 9}, {imageName: 'hint13.png', firstOperand: 6, secondOperand: 9},
+												{imageName: 'hint14.png', firstOperand: 7, secondOperand: 9}, {imageName: 'hint15.png', firstOperand: 5, secondOperand: 8},
+												{imageName: 'hint16.png', firstOperand: 6, secondOperand: 8}, {imageName: 'hint17.png', firstOperand: 7, secondOperand: 8},
+												{imageName: 'hint18.png', firstOperand: 7, secondOperand: 6}, {imageName: 'hint19.png', firstOperand: 7, secondOperand: 7}];
+
 		this.panArray = [];
 		this.score = 0;
+		this.strikes = 0;
 		this.playAgain = 0;
 		var zone1, zone2, zone3, zone4, zone5, zone6;
 		var zoneNum = 1;
@@ -202,6 +232,7 @@ class playGame extends Phaser.Scene {
 		var homeXY = this.getObjectPosition(2.15, 0.85);
 		var homeButton = this.add.sprite(homeXY.x, homeXY.y, "homeButton");			//363.25, 580.8
 		homeButton.setInteractive();
+		homeButton.setAlpha(0.8);
 		homeButton.on("pointerdown", function() {
 			this.tweens.add({
 				targets: [homeButton],
@@ -219,6 +250,7 @@ class playGame extends Phaser.Scene {
 		var restartXY = this.getObjectPosition(2.15, 1.15);
 		var restartButton = this.add.sprite(restartXY.x, restartXY.y, "restartButton");			//434.5, 580.8
 		restartButton.setInteractive();
+		restartButton.setAlpha(0.8);
 		restartButton.on("pointerdown", function() {
 			this.tweens.add({
 				targets: [restartButton],
@@ -233,19 +265,25 @@ class playGame extends Phaser.Scene {
 			});
 		}, this);
 
-		var scorePanelXY = this.getObjectPosition(-0.6, 0);
+		var scorePanelXY = this.getObjectPosition(-0.6, -0.15);
 		var scorePanel = this.add.image(scorePanelXY.x, scorePanelXY.y, "score");
-		var scoreTextXY = this.getObjectPosition(-0.66, -0.075);
+		scorePanel.setAlpha(0.8);
+		var scoreTextXY = this.getObjectPosition(-0.66, -0.2);
 		this.scoreText = this.add.bitmapText(scoreTextXY.x, scoreTextXY.y, "font", "0");
 
-		var highScorePanelXY = this.getObjectPosition(-0.6, 2);
+		var highScorePanelXY = this.getObjectPosition(-0.6, 2.15);
 		var highScorePanel = this.add.image(highScorePanelXY.x, highScorePanelXY.y, "highScore");
-		var highScoreTextXY = this.getObjectPosition(-0.66, 1.935);
+		highScorePanel.setAlpha(0.8);
+		var highScoreTextXY = this.getObjectPosition(-0.66, 2.09);
 		this.highScore = localStorage.getItem(gameOptions.localStorageName);
 		if (this.highScore == null) {
 			this.highScore = 0;
 		}
 		this.highScoreText = this.add.bitmapText(highScoreTextXY.x, highScoreTextXY.y, "font", this.highScore.toString());
+
+		var strikePanelXY = this.getObjectPosition(-0.6, 1);
+		this.strikePanel = this.add.sprite(strikePanelXY.x, strikePanelXY.y, "strikePanel", this.strikes);
+		this.strikePanel.setAlpha(0.8);
 
 		for (var i = 0; i < gameOptions.layout.rows; i++) {
 			this.panArray[i] = [];
@@ -303,14 +341,14 @@ class playGame extends Phaser.Scene {
 					zoneNum++;
 
 				} else if (i == 1 && j == 1) {
-					this.add.image(objectPosition.x, objectPosition.y + 100, "fractionBackground");					//Was 135
+					this.add.image(objectPosition.x, objectPosition.y + 100, "fractionBackground");
 					this.add.image(objectPosition.x, objectPosition.y, "pan");
 					var randomSlice = Math.floor((Math.random() * 7) + 1);
 					slice = this.physics.add.sprite(objectPosition.x, objectPosition.y, "slices", randomSlice).setInteractive();
 					fraction = this.add.sprite(fractionXY[fracNum].x, fractionXY[fracNum].y, "fractions", randomSlice);
 					fracNum++;
 					this.input.setDraggable(slice);
-					this.physics.world.enable(slice, 0);
+					this.physics.world.enable(slice, 0);					//0 for dynamic, 1 for static
 					this.panArray[i][j] = {
 						panPositionX: objectPosition.x,
 						panPositionY: objectPosition.y,
@@ -374,7 +412,7 @@ class playGame extends Phaser.Scene {
 	/*
 	Nick Bobich
 	Notes: This function handles addition of slices and changes the image displayed on a given pan.
-	Last Updated: 11-4-19 by Nick
+	Last Updated: 12-11-19 by Nick
 	*/
 	addSlice(gameObject) {
 		for (var i = 0; i < gameOptions.layout.rows; i++) {
@@ -390,10 +428,10 @@ class playGame extends Phaser.Scene {
 						this.panArray[i][j].fractionSprite.setFrame(this.panArray[i][j].panValue);
 						this.score += 10;
 						gameObject.destroy();
-						this.refreshGame(this.panArray[i][j].add);
+						this.refreshGame(this.panArray[i][j].add, i, j);
 					} else {
 						gameObject.destroy();
-						this.refreshGame(this.panArray[i][j].add);
+						this.refreshGame(this.panArray[i][j].add, i, j);
 					}
 				}
 			}
@@ -403,9 +441,9 @@ class playGame extends Phaser.Scene {
 	/*
 	Megan Solomon
 	Notes: This function updates the game after a slice is added to a pan.
-	Last Updated: 11-22-19 by Nick
+	Last Updated: 12-11-19 by Nick
 	*/
-	refreshGame(canAdd) {
+	refreshGame(canAdd, iPan, jPan) {
 		var slice;
 		var row = 0, col = 0;
 
@@ -449,17 +487,49 @@ class playGame extends Phaser.Scene {
 			}
 
 		} else {
-			window.alert("Incorrect");
+			
+			var firstOperand = this.panArray[1][1].panValue;
+			var secondOperand = this.panArray[iPan][jPan].panValue;
+			var imageName;
+
+			for (var i = 0; i < gameOptions.totalHints; i++) {
+				if (firstOperand == this.hintsArray[i].firstOperand || firstOperand == this.hintsArray[i].secondOperand) {
+					if (secondOperand == this.hintsArray[i].firstOperand || secondOperand == this.hintsArray[i].secondOperand) {
+						imageName = this.hintsArray[i].imageName;
+					}
+				}
+			}
+
+			Swal.fire({
+				text: 'Are you ready to continue?',
+				imageUrl: 'assets/hints/' + imageName,
+				imageWidth: 400,
+				imageHeight: 400,
+				showConfirmButton: false,
+				backdrop: false,
+				showCloseButton: true
+			});
+
 			slice = this.physics.add.sprite(this.panArray[1][1].panPositionX, this.panArray[1][1].panPositionY, "slices", this.panArray[1][1].panValue).setInteractive();
 			this.input.setDraggable(slice);
 			this.physics.world.enable(slice, 0);
 			this.panArray[1][1].sliceSprite = slice;
 			this.panArray[1][1].fractionSprite.setFrame(this.panArray[1][1].panValue);
 
-			if (this.score < 20) {
-				this.score -= this.score;
-			} else {
-				this.score -= 20;
+			if (this.strikes < gameOptions.maxStrikes) {
+				this.strikes++;
+				this.tweens.add ({
+					targets: [this.strikePanel],
+					scaleX: 1.5,
+					scaleY: 1.5,
+					duration: gameOptions.tweenSpeed,
+					yoyo: true,
+					repeat: 1,
+					callbackScope: this,
+					onComplete: function() {
+						this.strikePanel.setFrame(this.strikes);
+					}
+				});
 			}
 		}
 
@@ -479,16 +549,23 @@ class playGame extends Phaser.Scene {
 			}
 		});
 		
-		if (this.score >= 7500)  {
+		if (this.score >= gameOptions.scoreForExpert)  {
 			this.scene.start("PlayExpert", {score: this.score, playAgain: this.playAgain});
-			window.alert("You are in now in Expert Mode!");
+			Swal.fire({
+			  icon: 'info',
+			  title: 'Great Job!',
+			  text: 'You are now in expert mode.',
+			  showConfirmButton: false,
+				backdrop: false,
+				showCloseButton: true
+			});
 		}
 	}
 
 	/*
 	Nick Bobich
 	Notes: Checks to see if there is any possible move. If not, the game ends.
-	Last Updated: 11-14-19 by Nick
+	Last Updated: 12-10-19 by Nick
 	*/
 	isGameOver() {
 		var cannotAdd = 0;
@@ -499,14 +576,14 @@ class playGame extends Phaser.Scene {
 				}
 			}
 		}
-		return ((cannotAdd == gameOptions.pans) ? true : false);
+		return ((cannotAdd == gameOptions.pans || this.strikes == gameOptions.maxStrikes) ? true : false);
 	}
 }//End of PlayGame class
 
 /*
 Nick Bobich
 Notes: Scene displays the expert mode of the game.
-Last Updated: 11-22-19 by Nick
+Last Updated: 12-10-19 by Nick
 */
 class playExpert extends Phaser.Scene {
 	constructor() {
@@ -528,8 +605,21 @@ class playExpert extends Phaser.Scene {
 			this.playExpertAgain = 1;
 		}
 		var woodBackground = this.add.image(400, 320, "woodBackground");
-		var logo = this.add.image(400, 132, "logo");
+		var logo = this.add.image(400, 140, "logo");
+
+		this.hintsArray = [{imageName: 'hint00.png', firstOperand: 2, secondOperand: 11}, {imageName: 'hint01.png', firstOperand: 3, secondOperand: 11}, 
+												{imageName: 'hint02.png', firstOperand: 4, secondOperand: 11}, {imageName: 'hint03.png', firstOperand: 5, secondOperand: 11},
+												{imageName: 'hint04.png', firstOperand: 6, secondOperand: 11}, {imageName: 'hint05.png', firstOperand: 7, secondOperand: 11},
+												{imageName: 'hint06.png', firstOperand: 3, secondOperand: 10}, {imageName: 'hint07.png', firstOperand: 4, secondOperand: 10},
+												{imageName: 'hint08.png', firstOperand: 5, secondOperand: 10}, {imageName: 'hint09.png', firstOperand: 6, secondOperand: 10},
+												{imageName: 'hint10.png', firstOperand: 7, secondOperand: 10}, {imageName: 'hint11.png', firstOperand: 4, secondOperand: 9},
+												{imageName: 'hint12.png', firstOperand: 5, secondOperand: 9}, {imageName: 'hint13.png', firstOperand: 6, secondOperand: 9},
+												{imageName: 'hint14.png', firstOperand: 7, secondOperand: 9}, {imageName: 'hint15.png', firstOperand: 5, secondOperand: 8},
+												{imageName: 'hint16.png', firstOperand: 6, secondOperand: 8}, {imageName: 'hint17.png', firstOperand: 7, secondOperand: 8},
+												{imageName: 'hint18.png', firstOperand: 7, secondOperand: 6}, {imageName: 'hint19.png', firstOperand: 7, secondOperand: 7}];
+
 		this.panArray = [];
+		this.strikes = 0;
 		var zone1, zone2, zone3, zone4, zone5, zone6;
 		var zoneNum = 1;
 		var panFraction;
@@ -537,6 +627,7 @@ class playExpert extends Phaser.Scene {
 		var homeXY = this.getObjectPosition(2.15, 0.85);
 		var homeButton = this.add.sprite(homeXY.x, homeXY.y, "homeButton");			//363.25, 580.8
 		homeButton.setInteractive();
+		homeButton.setAlpha(0.8);
 		homeButton.on("pointerdown", function() {
 			this.tweens.add({
 				targets: [homeButton],
@@ -554,6 +645,7 @@ class playExpert extends Phaser.Scene {
 		var restartXY = this.getObjectPosition(2.15, 1.15);
 		var restartButton = this.add.sprite(restartXY.x, restartXY.y, "restartButton");			//434.5, 580.8
 		restartButton.setInteractive();
+		restartButton.setAlpha(0.8);
 		restartButton.on("pointerdown", function() {
 			this.tweens.add({
 				targets: [restartButton],
@@ -572,16 +664,22 @@ class playExpert extends Phaser.Scene {
 			});
 		}, this);
 
-		var scorePanelXY = this.getObjectPosition(-0.6, 0);
+		var scorePanelXY = this.getObjectPosition(-0.6, -0.15);
 		var scorePanel = this.add.image(scorePanelXY.x, scorePanelXY.y, "score");
-		var scoreTextXY = this.getObjectPosition(-0.66, -0.075);
+		scorePanel.setAlpha(0.8);
+		var scoreTextXY = this.getObjectPosition(-0.66, -0.2);
 		this.scoreText = this.add.bitmapText(scoreTextXY.x, scoreTextXY.y, "font", this.currentScore);
 
-		var highScorePanelXY = this.getObjectPosition(-0.6, 2);
+		var highScorePanelXY = this.getObjectPosition(-0.6, 2.15);
 		var highScorePanel = this.add.image(highScorePanelXY.x, highScorePanelXY.y, "highScore");
-		var highScoreTextXY = this.getObjectPosition(-0.66, 1.935);
+		highScorePanel.setAlpha(0.8);
+		var highScoreTextXY = this.getObjectPosition(-0.66, 2.09);
 		this.highScore = localStorage.getItem(gameOptions.localStorageName);
 		this.highScoreText = this.add.bitmapText(highScoreTextXY.x, highScoreTextXY.y, "font", this.highScore.toString());
+
+		var strikePanelXY = this.getObjectPosition(-0.6, 1);
+		this.strikePanel = this.add.sprite(strikePanelXY.x, strikePanelXY.y, "strikePanel", this.strikes);
+		this.strikePanel.setAlpha(0.8);
 
 		for (var i = 0; i < gameOptions.layout.rows; i++) {
 			this.panArray[i] = [];
@@ -709,10 +807,10 @@ class playExpert extends Phaser.Scene {
 						this.panArray[i][j].panFractionSprite.setFrame(this.panArray[i][j].panValue);
 						this.currentScore += 10;
 						gameObject.destroy();
-						this.refreshGame(this.panArray[i][j].add);
+						this.refreshGame(this.panArray[i][j].add, i, j);
 					} else {
 						gameObject.destroy();
-						this.refreshGame(this.panArray[i][j].add);
+						this.refreshGame(this.panArray[i][j].add, i, j);
 					}
 				}
 			}
@@ -722,9 +820,9 @@ class playExpert extends Phaser.Scene {
 	/*
 	Megan Solomon
 	Notes: This function updates the game after a slice is added to a pan.
-	Last Updated: 11-18-19 by Megan
+	Last Updated: 12-10-19 by Megan
 	*/
-	refreshGame(canAdd) {
+	refreshGame(canAdd, iPan, jPan) {
 		var panFraction;
 		var row = 0, col = 0;
 
@@ -766,16 +864,48 @@ class playExpert extends Phaser.Scene {
 			}
 
 		} else {
-			window.alert("Incorrect");
+			
+			var firstOperand = this.panArray[1][1].panValue;
+			var secondOperand = this.panArray[iPan][jPan].panValue;
+			var imageName;
+
+			for (var i = 0; i < gameOptions.totalHints; i++) {
+				if (firstOperand == this.hintsArray[i].firstOperand || firstOperand == this.hintsArray[i].secondOperand) {
+					if (secondOperand == this.hintsArray[i].firstOperand || secondOperand == this.hintsArray[i].secondOperand) {
+						imageName = this.hintsArray[i].imageName;
+					}
+				}
+			}
+
+			Swal.fire({
+				text: 'Are you ready to continue?',
+				imageUrl: 'assets/hints/' + imageName,
+				imageWidth: 400,
+				imageHeight: 400,
+				showConfirmButton: false,
+				backdrop: false,
+				showCloseButton: true
+			});
+
 			panFraction = this.physics.add.sprite(this.panArray[1][1].panPositionX, this.panArray[1][1].panPositionY, "panFractions", this.panArray[1][1].panValue).setInteractive();
 			this.input.setDraggable(panFraction);
 			this.physics.world.enable(panFraction, 0);
 			this.panArray[1][1].panFractionSprite = panFraction;
 
-			if (this.currentScore < 20) {
-				this.currentScore -= this.currentScore;
-			} else {
-				this.currentScore -= 20;
+			if (this.strikes < gameOptions.maxStrikes) {
+				this.strikes++;
+				this.tweens.add ({
+					targets: [this.strikePanel],
+					scaleX: 1.5,
+					scaleY: 1.5,
+					duration: gameOptions.tweenSpeed,
+					yoyo: true,
+					repeat: 1,
+					callbackScope: this,
+					onComplete: function() {
+						this.strikePanel.setFrame(this.strikes);
+					}
+				});
 			}
 		}
 
@@ -799,7 +929,7 @@ class playExpert extends Phaser.Scene {
 	/*
 	Nick Bobich
 	Notes: Checks to see if there is any possible move. If not, the game ends.
-	Last Updated: 11-18-19 by Nick
+	Last Updated: 12-10-19 by Nick
 	*/
 	isGameOver() {
 		var cannotAdd = 0;
@@ -810,7 +940,7 @@ class playExpert extends Phaser.Scene {
 				}
 			}
 		}
-		return ((cannotAdd == gameOptions.pans) ? true : false);
+		return ((cannotAdd == gameOptions.pans || this.strikes == gameOptions.maxStrikes) ? true : false);
 	}
 
 }//End of Play Expert Scene
